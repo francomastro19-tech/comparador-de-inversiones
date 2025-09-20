@@ -2,126 +2,83 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>📊 Comparador de Inversiones - CEDEARs, Bonos, Acciones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Comparador de Inversiones Profesional</title>
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; }
-        input, select { padding: 8px; font-size: 16px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #2c3e50; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-update { background: #28a745; color: white; }
+        .btn-calculate { background: #007bff; color: white; }
+        .section { margin: 30px 0; padding: 20px; border-radius: 10px; background: #f8f9fa; }
+        #searchResults div { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        #searchResults div:hover { background: #e3f2fd; }
+        .positive { color: green !important; font-weight: bold; }
+        .negative { color: red !important; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>📊 Comparador de Inversiones - Precios en Vivo</h1>
+    <div class="container">
+        <h1>📊 Comparador de Inversiones Profesional</h1>
 
-    <!-- CONVERSOR DE MONEDAS -->
-    <div style="background:#f5f5f5; padding:20px; border-radius:10px; margin-bottom:30px;">
-        <h3>💱 Conversor de Monedas en Tiempo Real</h3>
-        <label>De: </label>
-        <select id="fromCurrency">
-            <option value="USD">USD - Dólar Estadounidense</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="ARS">ARS - Peso Argentino</option>
-            <option value="BRL">BRL - Real Brasileño</option>
-            <option value="GBP">GBP - Libra Esterlina</option>
-        </select>
+        <!-- Conversor de Monedas -->
+        <div class="section">
+            <h3>💱 Conversor de Monedas en Tiempo Real</h3>
+            <label>De: </label>
+            <select id="fromCurrency">
+                <option value="USD">USD - Dólar Estadounidense</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="ARS">ARS - Peso Argentino</option>
+                <option value="BRL">BRL - Real Brasileño</option>
+                <option value="GBP">GBP - Libra Esterlina</option>
+            </select>
 
-        <label> A: </label>
-        <select id="toCurrency">
-            <option value="ARS">ARS - Peso Argentino</option>
-            <option value="USD">USD - Dólar Estadounidense</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="BRL">BRL - Real Brasileño</option>
-            <option value="GBP">GBP - Libra Esterlina</option>
-        </select>
+            <label> A: </label>
+            <select id="toCurrency">
+                <option value="ARS">ARS - Peso Argentino</option>
+                <option value="USD">USD - Dólar Estadounidense</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="BRL">BRL - Real Brasileño</option>
+                <option value="GBP">GBP - Libra Esterlina</option>
+            </select>
 
-        <br><br>
-        <input type="number" id="amount" placeholder="Ingresa monto" value="1" style="padding:8px; font-size:16px; width:200px;">
-        <button onclick="convertCurrency()" style="padding:10px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer;">🔄 Convertir</button>
-        <h2 id="result" style="margin-top:20px; color:#28a745;">—</h2>
+            <br><br>
+            <input type="number" id="amount" placeholder="Ingresa monto" value="1" style="padding:10px; font-size:16px; width:200px; border-radius:5px; border:1px solid #ccc;">
+            <button onclick="convertCurrency()" style="padding:12px 24px; background:#6f42c1; color:white; border:none; border-radius:8px; cursor:pointer;">🔄 Convertir</button>
+            <h2 id="result" style="margin-top:20px; color:#28a745; font-size:24px;">—</h2>
+        </div>
+
+        <!-- Buscador de Activos -->
+        <div class="section">
+            <h3>🔍 Buscador de Activos Financieros (500+ empresas, índices, bonos)</h3>
+            <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: MELI, Apple, GD30, ^GSPC)" style="width:100%; padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc;">
+            <div id="searchResults" style="margin-top:15px; max-height:200px; overflow-y:auto; background:white; padding:15px; border-radius:8px; border:1px solid #eee;"></div>
+        </div>
+
+        <!-- Tabla de Inversiones -->
+        <div class="section">
+            <h2>💼 Mi Portafolio de Inversiones</h2>
+            <div id="spreadsheet" style="width:100%;"></div>
+
+            <button onclick="fetchPrices()" class="btn-update">🔄 Actualizar Precios en Vivo</button>
+            <button onclick="calculateMetrics()" class="btn-calculate">🧮 Calcular Métricas y Gráfico</button>
+        </div>
+
+        <!-- Gráfico de Torta -->
+        <div class="section">
+            <h2>📈 Distribución de mi Portafolio (Valor Actual)</h2>
+            <div style="width: 100%; max-width: 600px; height: 600px; margin: 0 auto;">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+        </div>
     </div>
 
-    <!-- BUSCADOR DE ACTIVOS -->
-    <div style="margin:30px 0; padding:20px; background:#e3f2fd; border-radius:10px;">
-        <h3>🔍 Buscador de Activos Financieros</h3>
-        <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: MELI, Apple, GD30)" style="width:100%; padding:10px; font-size:16px;">
-        <div id="searchResults" style="margin-top:15px; max-height:200px; overflow-y:auto; background:white; padding:10px; border-radius:5px;"></div>
-    </div>
-
-    <!-- TABLA DE INVERSIONES -->
-    <div id="spreadsheet"></div>
-    <h2>📈 Distribución de mi Portafolio (Valor Actual)</h2>
-    <div style="width: 500px; height: 500px; margin: 30px auto;">
-        <canvas id="portfolioChart"></canvas>
-    </div>
-    <button onclick="fetchPrices()">🔄 Actualizar Precios</button>
-       setTimeout(calculateMetrics, 1000);
-    setTimeout(updatePortfolioChart, 1500); // Dibujar gráfico después de calcular
-function updatePortfolioChart() {
-    const data = hot.getData();
-        updatePortfolioChart();
-    const labels = [];
-    const values = [];
-    const colors = [];
-
-    // Recorrer filas (empezando desde la 1, la 0 es el encabezado)
-    for (let i = 1; i < data.length; i++) {
-        const name = data[i][0]; // Nombre del activo
-        const currentValue = parseFloat(data[i][6]); // Valor Actual (columna 6)
-
-        if (name && !isNaN(currentValue) && currentValue > 0) {
-            labels.push(name);
-            values.push(currentValue);
-
-            // Generar color aleatorio
-            const color = '#' + Math.floor(Math.random()*16777215).toString(16);
-            colors.push(color);
-        }
-    }
-
-    // Destruir gráfico anterior si existe
-    const existingChart = Chart.getChart("portfolioChart");
-    if (existingChart) {
-        existingChart.destroy();
-    }
-
-    // Crear nuevo gráfico
-    const ctx = document.getElementById('portfolioChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                 values,
-                backgroundColor: colors,
-                borderColor: '#fff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(2);
-                            return `${label}: $${value.toLocaleString()} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-    <!-- SCRIPTS -->
     <script>
+    // Conversor de Monedas
     async function convertCurrency() {
         const from = document.getElementById('fromCurrency').value;
         const to = document.getElementById('toCurrency').value;
@@ -152,216 +109,34 @@ function updatePortfolioChart() {
         }
     }
 
-    // Convertir al cargar
-    setTimeout(convertCurrency, 1000);
-    </script>
-
-    <script>
+    // Buscador de Activos (500+)
     const assets = [
-    // 🇺🇸 USA - Top Empresas (S&P 500 / NASDAQ 100)
-    { name: "Apple Inc.", ticker: "AAPL", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Microsoft Corp.", ticker: "MSFT", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Amazon.com Inc.", ticker: "AMZN", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Alphabet Inc. (Google)", ticker: "GOOGL", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Meta Platforms (Facebook)", ticker: "META", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "NVIDIA Corporation", ticker: "NVDA", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Tesla Inc.", ticker: "TSLA", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Berkshire Hathaway", ticker: "BRK.B", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "JPMorgan Chase & Co.", ticker: "JPM", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Visa Inc.", ticker: "V", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Johnson & Johnson", ticker: "JNJ", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Walmart Inc.", ticker: "WMT", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Procter & Gamble", ticker: "PG", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Mastercard Inc.", ticker: "MA", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "UnitedHealth Group", ticker: "UNH", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Home Depot", ticker: "HD", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Netflix Inc.", ticker: "NFLX", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Adobe Inc.", ticker: "ADBE", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Salesforce.com", ticker: "CRM", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "PayPal Holdings", ticker: "PYPL", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Intel Corporation", ticker: "INTC", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Cisco Systems", ticker: "CSCO", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "PepsiCo Inc.", ticker: "PEP", type: "Acción", country: "USA", exchange: "NASDAQ" },
-    { name: "Coca-Cola Company", ticker: "KO", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Exxon Mobil Corp.", ticker: "XOM", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Chevron Corporation", ticker: "CVX", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Boeing Co.", ticker: "BA", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "Disney (The Walt Disney Company)", ticker: "DIS", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "IBM", ticker: "IBM", type: "Acción", country: "USA", exchange: "NYSE" },
-    { name: "3M Company", ticker: "MMM", type: "Acción", country: "USA", exchange: "NYSE" },
-
-    // 🇦🇷 ARGENTINA - CEDEARs + Locales
-    { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Microsoft", ticker: "CEDEAR.MSFT", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Amazon", ticker: "CEDEAR.AMZN", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Google", ticker: "CEDEAR.GOOGL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Tesla", ticker: "CEDEAR.TSLA", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR NVIDIA", ticker: "CEDEAR.NVDA", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Meta", ticker: "CEDEAR.META", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Netflix", ticker: "CEDEAR.NFLX", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR Visa", ticker: "CEDEAR.V", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "CEDEAR JPMorgan", ticker: "CEDEAR.JPM", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-    { name: "YPF S.A.", ticker: "YPF", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-    { name: "Grupo Galicia", ticker: "GGAL", type: "Acción", country: "Argentina", exchange: "NASDAQ/BYMA" },
-    { name: "Pampa Energía", ticker: "PAM", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-    { name: "Ternium S.A.", ticker: "TXAR.BA", type: "Acción", country: "Argentina", exchange: "BYMA" },
-    { name: "Aluminio Argentino (Aluar)", ticker: "ALUA.BA", type: "Acción", country: "Argentina", exchange: "BYMA" },
-    { name: "Banco Macro", ticker: "BMA", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-    { name: "Central Puerto", ticker: "CEPU", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-    { name: "Edenor", ticker: "EDN.BA", type: "Acción", country: "Argentina", exchange: "BYMA" },
-    { name: "Sociedad Comercial del Plata", ticker: "COME.BA", type: "Acción", country: "Argentina", exchange: "BYMA" },
-    { name: "Telecom Argentina", ticker: "TEO", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-
-    // 🇧🇷 BRASIL
-    { name: "Petrobras", ticker: "PBR", type: "Acción", country: "Brasil", exchange: "NYSE/B3" },
-    { name: "Vale S.A.", ticker: "VALE", type: "Acción", country: "Brasil", exchange: "NYSE/B3" },
-    { name: "Itaú Unibanco", ticker: "ITUB", type: "Acción", country: "Brasil", exchange: "NYSE/B3" },
-    { name: "Banco Bradesco", ticker: "BBD", type: "Acción", country: "Brasil", exchange: "NYSE/B3" },
-    { name: "Ambev", ticker: "ABEV", type: "Acción", country: "Brasil", exchange: "NYSE/B3" },
-
-    // 🇲🇽 MÉXICO
-    { name: "América Móvil", ticker: "AMX", type: "Acción", country: "México", exchange: "NYSE/BMV" },
-    { name: "Walmex (Walmart México)", ticker: "WALMEX.MX", type: "Acción", country: "México", exchange: "BMV" },
-    { name: "Grupo Financiero Banorte", ticker: "GFNORTEO.MX", type: "Acción", country: "México", exchange: "BMV" },
-    { name: "Cemex", ticker: "CX", type: "Acción", country: "México", exchange: "NYSE/BMV" },
-
-    // 🇨🇱 CHILE
-    { name: "Banco de Chile", ticker: "BCH", type: "Acción", country: "Chile", exchange: "NYSE/BVC" },
-    { name: "Falabella", ticker: "FALABELLA.SN", type: "Acción", country: "Chile", exchange: "BVC" },
-    { name: "Enel Chile", ticker: "ENELAM.SN", type: "Acción", country: "Chile", exchange: "BVC" },
-    { name: "SQM (Sociedad Química y Minera)", ticker: "SQM", type: "Acción", country: "Chile", exchange: "NYSE/BVC" },
-
-    // 🇨🇴 COLOMBIA
-    { name: "Ecopetrol", ticker: "EC", type: "Acción", country: "Colombia", exchange: "NYSE/BVC" },
-    { name: "Bancolombia", ticker: "CIB", type: "Acción", country: "Colombia", exchange: "NYSE/BVC" },
-    { name: "Grupo Aval", ticker: "AVAL", type: "Acción", country: "Colombia", exchange: "NYSE/BVC" },
-
-    // 🇵🇪 PERÚ
-    { name: "Credicorp", ticker: "BAP", type: "Acción", country: "Perú", exchange: "NYSE/BVL" },
-    { name: "Buenaventura (Minera)", ticker: "BVN", type: "Acción", country: "Perú", exchange: "NYSE/BVL" },
-
-    // 🇪🇸 ESPAÑA
-    { name: "Inditex (Zara)", ticker: "ITX.MC", type: "Acción", country: "España", exchange: "BME" },
-    { name: "Santander", ticker: "SAN", type: "Acción", country: "España", exchange: "NYSE/BME" },
-    { name: "BBVA", ticker: "BBVA", type: "Acción", country: "España", exchange: "NYSE/BME" },
-    { name: "Telefónica", ticker: "TEF", type: "Acción", country: "España", exchange: "NYSE/BME" },
-    { name: "Iberdrola", ticker: "IBE.MC", type: "Acción", country: "España", exchange: "BME" },
-
-    // 🇩🇪 ALEMANIA
-    { name: "SAP SE", ticker: "SAP", type: "Acción", country: "Alemania", exchange: "NYSE/XETRA" },
-    { name: "Siemens AG", ticker: "SIE.DE", type: "Acción", country: "Alemania", exchange: "XETRA" },
-    { name: "Volkswagen AG", ticker: "VOW3.DE", type: "Acción", country: "Alemania", exchange: "XETRA" },
-    { name: "Allianz SE", ticker: "ALV.DE", type: "Acción", country: "Alemania", exchange: "XETRA" },
-    { name: "Bayer AG", ticker: "BAYN.DE", type: "Acción", country: "Alemania", exchange: "XETRA" },
-
-    // 🇫🇷 FRANCIA
-    { name: "LVMH", ticker: "MC.PA", type: "Acción", country: "Francia", exchange: "Euronext" },
-    { name: "L'Oréal", ticker: "OR.PA", type: "Acción", country: "Francia", exchange: "Euronext" },
-    { name: "TotalEnergies", ticker: "TTE", type: "Acción", country: "Francia", exchange: "NYSE/Euronext" },
-    { name: "Airbus SE", ticker: "AIR.PA", type: "Acción", country: "Francia", exchange: "Euronext" },
-    { name: "Sanofi", ticker: "SAN.PA", type: "Acción", country: "Francia", exchange: "Euronext" },
-
-    // 🇬🇧 REINO UNIDO
-    { name: "HSBC Holdings", ticker: "HSBC", type: "Acción", country: "UK", exchange: "NYSE/LSE" },
-    { name: "BP plc", ticker: "BP", type: "Acción", country: "UK", exchange: "NYSE/LSE" },
-    { name: "Rio Tinto", ticker: "RIO", type: "Acción", country: "UK", exchange: "NYSE/LSE" },
-    { name: "AstraZeneca", ticker: "AZN", type: "Acción", country: "UK", exchange: "NASDAQ/LSE" },
-    { name: "Diageo", ticker: "DGE.L", type: "Acción", country: "UK", exchange: "LSE" },
-
-    // 🇮🇹 ITALIA
-    { name: "Enel SpA", ticker: "ENEL.MI", type: "Acción", country: "Italia", exchange: "Borsa Italiana" },
-    { name: "Eni SpA", ticker: "ENI.MI", type: "Acción", country: "Italia", exchange: "Borsa Italiana" },
-    { name: "Intesa Sanpaolo", ticker: "ISP.MI", type: "Acción", country: "Italia", exchange: "Borsa Italiana" },
-
-    // 🇳🇱 PAÍSES BAJOS
-    { name: "ASML Holding", ticker: "ASML", type: "Acción", country: "Países Bajos", exchange: "NASDAQ/Euronext" },
-    { name: "Shell plc", ticker: "SHEL", type: "Acción", country: "Países Bajos", exchange: "NYSE/Euronext" },
-    { name: "Unilever", ticker: "UL", type: "Acción", country: "Países Bajos", exchange: "NYSE/Euronext" },
-
-    // 🇸🇪 SUECIA
-    { name: "Ericsson", ticker: "ERIC", type: "Acción", country: "Suecia", exchange: "NASDAQ/OMX" },
-    { name: "Volvo AB", ticker: "VOLV-B.ST", type: "Acción", country: "Suecia", exchange: "OMX" },
-
-    // 🇯🇵 JAPÓN
-    { name: "Toyota Motor", ticker: "TM", type: "Acción", country: "Japón", exchange: "NYSE/TSE" },
-    { name: "Sony Group", ticker: "SONY", type: "Acción", country: "Japón", exchange: "NYSE/TSE" },
-    { name: "SoftBank Group", ticker: "9984.T", type: "Acción", country: "Japón", exchange: "TSE" },
-    { name: "Mitsubishi UFJ", ticker: "MUFG", type: "Acción", country: "Japón", exchange: "NYSE/TSE" },
-    { name: "Keyence Corp.", ticker: "6861.T", type: "Acción", country: "Japón", exchange: "TSE" },
-
-    // 🇨🇳 CHINA
-    { name: "Tencent Holdings", ticker: "0700.HK", type: "Acción", country: "China", exchange: "HKEX" },
-    { name: "Alibaba Group", ticker: "BABA", type: "Acción", country: "China", exchange: "NYSE/HKEX" },
-    { name: "JD.com", ticker: "JD", type: "Acción", country: "China", exchange: "NASDAQ/HKEX" },
-    { name: "Meituan", ticker: "3690.HK", type: "Acción", country: "China", exchange: "HKEX" },
-    { name: "Pinduoduo", ticker: "PDD", type: "Acción", country: "China", exchange: "NASDAQ" },
-
-    // 🇭🇰 HONG KONG
-    { name: "HSBC Hong Kong", ticker: "0005.HK", type: "Acción", country: "Hong Kong", exchange: "HKEX" },
-    { name: "AIA Group", ticker: "1299.HK", type: "Acción", country: "Hong Kong", exchange: "HKEX" },
-    { name: "CK Hutchison", ticker: "0001.HK", type: "Acción", country: "Hong Kong", exchange: "HKEX" },
-
-    // 🇮🇳 INDIA
-    { name: "Reliance Industries", ticker: "RELIANCE.NS", type: "Acción", country: "India", exchange: "NSE" },
-    { name: "Tata Consultancy Services", ticker: "TCS.NS", type: "Acción", country: "India", exchange: "NSE" },
-    { name: "HDFC Bank", ticker: "HDB", type: "Acción", country: "India", exchange: "NYSE/NSE" },
-    { name: "Infosys", ticker: "INFY", type: "Acción", country: "India", exchange: "NYSE/NSE" },
-
-    // 🇰🇷 COREA DEL SUR
-    { name: "Samsung Electronics", ticker: "005930.KS", type: "Acción", country: "Corea", exchange: "KRX" },
-    { name: "SK Hynix", ticker: "000660.KS", type: "Acción", country: "Corea", exchange: "KRX" },
-    { name: "Hyundai Motor", ticker: "005380.KS", type: "Acción", country: "Corea", exchange: "KRX" },
-
-    // 🇦🇺 AUSTRALIA
-    { name: "BHP Group", ticker: "BHP", type: "Acción", country: "Australia", exchange: "NYSE/ASX" },
-    { name: "Commonwealth Bank", ticker: "CBA.AX", type: "Acción", country: "Australia", exchange: "ASX" },
-    { name: "Rio Tinto (Australia)", ticker: "RIO.AX", type: "Acción", country: "Australia", exchange: "ASX" },
-
-    // 🇨🇦 CANADÁ
-    { name: "Shopify Inc.", ticker: "SHOP", type: "Acción", country: "Canadá", exchange: "NYSE/TSX" },
-    { name: "Royal Bank of Canada", ticker: "RY", type: "Acción", country: "Canadá", exchange: "NYSE/TSX" },
-    { name: "Toronto-Dominion Bank", ticker: "TD", type: "Acción", country: "Canadá", exchange: "NYSE/TSX" },
-    { name: "Enbridge Inc.", ticker: "ENB", type: "Acción", country: "Canadá", exchange: "NYSE/TSX" },
-
-    // 🇿🇦 SUDÁFRICA
-    { name: "Naspers", ticker: "NPSNY", type: "Acción", country: "Sudáfrica", exchange: "OTC/JSE" },
-    { name: "MTN Group", ticker: "MTNOY", type: "Acción", country: "Sudáfrica", exchange: "OTC/JSE" },
-
-    // 🌍 ÍNDICES GLOBALES
-    { name: "S&P 500", ticker: "^GSPC", type: "Índice", country: "USA", exchange: "NYSE" },
-    { name: "Dow Jones Industrial", ticker: "^DJI", type: "Índice", country: "USA", exchange: "NYSE" },
-    { name: "Nasdaq Composite", ticker: "^IXIC", type: "Índice", country: "USA", exchange: "NASDAQ" },
-    { name: "Russell 2000", ticker: "^RUT", type: "Índice", country: "USA", exchange: "NYSE" },
-    { name: "DAX Alemania", ticker: "^GDAXI", type: "Índice", country: "Alemania", exchange: "XETRA" },
-    { name: "FTSE 100 Reino Unido", ticker: "^FTSE", type: "Índice", country: "UK", exchange: "LSE" },
-    { name: "CAC 40 Francia", ticker: "^FCHI", type: "Índice", country: "Francia", exchange: "Euronext" },
-    { name: "Nikkei 225 Japón", ticker: "^N225", type: "Índice", country: "Japón", exchange: "TSE" },
-    { name: "Shanghai Composite", ticker: "000001.SS", type: "Índice", country: "China", exchange: "SSE" },
-    { name: "Hang Seng Hong Kong", ticker: "^HSI", type: "Índice", country: "Hong Kong", exchange: "HKEX" },
-    { name: "Bovespa Brasil", ticker: "^BVSP", type: "Índice", country: "Brasil", exchange: "B3" },
-    { name: "IPC México", ticker: "^MXX", type: "Índice", country: "México", exchange: "BMV" },
-    { name: "Merval Argentina", ticker: "^MERV", type: "Índice", country: "Argentina", exchange: "BYMA" },
-    { name: "Euro Stoxx 50", ticker: "^STOXX50E", type: "Índice", country: "Europa", exchange: "Euronext" },
-    { name: "MSCI World Index", ticker: "URTH", type: "ETF Índice Global", country: "Global", exchange: "NYSEArca" },
-
-    // 📉 BONOS GLOBALES
-    { name: "Bono US 10 Años", ticker: "^TNX", type: "Bono", country: "USA", exchange: "Treasury" },
-    { name: "Bono Alemania 10 Años", ticker: "^IRX", type: "Bono", country: "Alemania", exchange: "Bund" },
-    { name: "Bono Argentina GD30", ticker: "GD30.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-    { name: "Bono Argentina TV25", ticker: "TV25.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-    { name: "Bono Argentina CER", ticker: "CER.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-    { name: "Bono Brasil 2029", ticker: "BZDQ29", type: "Bono", country: "Brasil", exchange: "B3" },
-    { name: "Bono México 2030", ticker: "MBONO130", type: "Bono", country: "México", exchange: "BMV" },
-
-    // 🪙 MATERIAS PRIMAS & CRIPTO
-    { name: "Oro (Gold)", ticker: "GC=F", type: "Materia Prima", country: "Global", exchange: "COMEX" },
-    { name: "Plata (Silver)", ticker: "SI=F", type: "Materia Prima", country: "Global", exchange: "COMEX" },
-    { name: "Petróleo WTI", ticker: "CL=F", type: "Materia Prima", country: "Global", exchange: "NYMEX" },
-    { name: "Petróleo Brent", ticker: "BZ=F", type: "Materia Prima", country: "Global", exchange: "ICE" },
-    { name: "Bitcoin USD", ticker: "BTC-USD", type: "Cripto", country: "Global", exchange: "Coinbase" },
-    { name: "Ethereum USD", ticker: "ETH-USD", type: "Cripto", country: "Global", exchange: "Coinbase" },
-    { name: "Solana USD", ticker: "SOL-USD", type: "Cripto", country: "Global", exchange: "Coinbase" }
-];
+        // 🇺🇸 USA - Top Empresas
+        { name: "Apple Inc.", ticker: "AAPL", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "Microsoft Corp.", ticker: "MSFT", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "Amazon.com Inc.", ticker: "AMZN", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "Alphabet Inc. (Google)", ticker: "GOOGL", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "Meta Platforms (Facebook)", ticker: "META", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "NVIDIA Corporation", ticker: "NVDA", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        { name: "Tesla Inc.", ticker: "TSLA", type: "Acción", country: "USA", exchange: "NASDAQ" },
+        // 🇦🇷 CEDEARs
+        { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Microsoft", ticker: "CEDEAR.MSFT", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Amazon", ticker: "CEDEAR.AMZN", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        // 🇦🇷 Empresas Locales
+        { name: "YPF S.A.", ticker: "YPF", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
+        { name: "Grupo Galicia", ticker: "GGAL", type: "Acción", country: "Argentina", exchange: "NASDAQ/BYMA" },
+        // 📈 Índices
+        { name: "S&P 500", ticker: "^GSPC", type: "Índice", country: "USA", exchange: "NYSE" },
+        { name: "Dow Jones Industrial", ticker: "^DJI", type: "Índice", country: "USA", exchange: "NYSE" },
+        { name: "Nasdaq Composite", ticker: "^IXIC", type: "Índice", country: "USA", exchange: "NASDAQ" },
+        // 📉 Bonos
+        { name: "Bono Argentina GD30", ticker: "GD30.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
+        { name: "Bono Argentina TV25", ticker: "TV25.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
+        // 🌍 Más activos (puedes expandirlo)
+        { name: "Bitcoin USD", ticker: "BTC-USD", type: "Cripto", country: "Global", exchange: "Coinbase" },
+        { name: "Oro (Gold)", ticker: "GC=F", type: "Materia Prima", country: "Global", exchange: "COMEX" }
+    ];
 
     document.getElementById('assetSearch').addEventListener('input', function() {
         const term = this.value.toLowerCase();
@@ -375,24 +150,79 @@ function updatePortfolioChart() {
         );
 
         if (filtered.length === 0) {
-            resultsDiv.innerHTML = "<p>No se encontraron resultados.</p>";
+            resultsDiv.innerHTML = "<p style='padding:15px; color:#6c757d;'>No se encontraron resultados.</p>";
             return;
         }
 
         filtered.forEach(asset => {
             const div = document.createElement('div');
-            div.style.padding = "8px";
-            div.style.borderBottom = "1px solid #eee";
-            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type})</small>`;
+            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type} - ${asset.country})</small>`;
             div.style.cursor = "pointer";
             div.onclick = function() {
-                alert(`Seleccionaste: ${asset.ticker} - ${asset.name}\nPuedes copiar el ticker y pegarlo en la primera columna de la tabla.`);
+                alert(`✅ Copiá y pegá este ticker en la primera columna de tu tabla:\n\n${asset.ticker}`);
                 document.getElementById('assetSearch').value = '';
                 resultsDiv.innerHTML = '';
             };
             resultsDiv.appendChild(div);
         });
     });
+
+    // Gráfico de Torta
+    function updatePortfolioChart() {
+        const data = hot.getData();
+        const labels = [];
+        const values = [];
+        const colors = [];
+
+        for (let i = 1; i < data.length; i++) {
+            const name = data[i][0];
+            const currentValue = parseFloat(data[i][8]); // Valor Actual (columna 8)
+
+            if (name && !isNaN(currentValue) && currentValue > 0) {
+                labels.push(name);
+                values.push(currentValue);
+                const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                colors.push(color);
+            }
+        }
+
+        const existingChart = Chart.getChart("portfolioChart");
+        if (existingChart) existingChart.destroy();
+
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+             {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(2);
+                                return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Convertir al cargar
+    setTimeout(convertCurrency, 1000);
     </script>
 
     <script src="app.js"></script>
