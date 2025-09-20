@@ -14,7 +14,6 @@ const hot = new Handsontable(container, {
   licenseKey: 'non-commercial-and-evaluation'
 });
 
-// Función para calcular métricas
 function calculateMetrics() {
   const data = hot.getData();
   for (let i = 1; i < data.length; i++) {
@@ -22,9 +21,28 @@ function calculateMetrics() {
     const buyPrice = parseFloat(data[i][2]) || 0;
     const currentPrice = parseFloat(data[i][3]) || 0;
 
-    data[i][4] = (qty * buyPrice).toFixed(2); // Valor Invertido
-    data[i][5] = (qty * currentPrice).toFixed(2); // Valor Actual
-    data[i][6] = currentPrice > 0 ? (((currentPrice - buyPrice) / buyPrice) * 100).toFixed(2) + "%" : "";
+    const invested = qty * buyPrice;
+    const current = qty * currentPrice;
+    const gainPercent = currentPrice > 0 ? ((currentPrice - buyPrice) / buyPrice) * 100 : 0;
+
+    data[i][4] = isNaN(invested) ? "" : invested.toFixed(2); // Valor Invertido
+    data[i][5] = isNaN(current) ? "" : current.toFixed(2); // Valor Actual
+    data[i][6] = currentPrice > 0 ? gainPercent.toFixed(2) + "%" : "";
+
+    // Aplicar color según ganancia/pérdida
+    const cell = hot.getCell(i, 6); // Fila i, columna 6 (Ganancia %)
+    if (cell) {
+      if (gainPercent > 0) {
+        cell.style.color = "green";
+        cell.style.fontWeight = "bold";
+      } else if (gainPercent < 0) {
+        cell.style.color = "red";
+        cell.style.fontWeight = "bold";
+      } else {
+        cell.style.color = "black";
+        cell.style.fontWeight = "normal";
+      }
+    }
   }
   hot.loadData(data);
 }
