@@ -2,7 +2,7 @@
 const container = document.getElementById('spreadsheet');
 const hot = new Handsontable(container, {
   data: [
-    ["Activo (ej: AAPL, CEDEAR.MELI)", "Cantidad", "Precio Compra ($)", "Precio Actual ($)", "Valor Invertido", "Valor Actual", "Ganancia %"],
+      ["Nombre de la Inversión (Ticker)", "Cantidad Comprada", "Precio de Compra (USD)", "Precio Actual (USD)", "Valor Invertido (USD)", "Valor Actual (USD)", "Ganancia/Perdida (%)"],,
     ["CEDEAR.MELI", 5, 15000, "", "", "", ""],
     ["AAPL", 10, 150, "", "", "", ""],
     ["GD30", 2, 50000, "", "", "", ""]
