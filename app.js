@@ -2,10 +2,10 @@
 const container = document.getElementById('spreadsheet');
 const hot = new Handsontable(container, {
   data: [
-         ["Nombre de la Inversión (Ticker)", "Cantidad Comprada", "Fecha de Compra (YYYY-MM-DD)", "Precio de Compra (USD)", "Precio Actual (USD)", "Valor Invertido (USD)", "Valor Actual (USD)", "Ganancia/Perdida (%)"],,,
-        ["CEDEAR.MELI", 5, "2024-01-15", 15000, "", "", "", ""],
-    ["AAPL", 10, "2024-03-10", 150, "", "", "", ""],
-    ["GD30", 2, "2024-02-05", 50000, "", "", "", ""],
+         [    ["Nombre de la Inversión (Ticker)", "Cantidad Comprada", "Fecha de Compra (YYYY-MM-DD)", "Precio de Compra (USD)", "Precio Actual (USD)", "Precio Objetivo (USD)", "Estado Alerta", "Valor Invertido (USD)", "Valor Actual (USD)", "Ganancia/Perdida (%)"],,,,
+            ["CEDEAR.MELI", 5, "2024-01-15", 15000, "", 20000, "", "", "", ""],
+    ["AAPL", 10, "2024-03-10", 150, "", 200, "", "", "", ""],
+    ["GD30", 2, "2024-02-05", 50000, "", 60000, "", "", "", ""]
   colHeaders: true,
   rowHeaders: true,
   formulas: true,
@@ -16,16 +16,30 @@ const hot = new Handsontable(container, {
 function calculateMetrics() {
   const data = hot.getData();
   for (let i = 1; i < data.length; i++) {
-        const qty = parseFloat(data[i][1]) || 0;
-    const buyPrice = parseFloat(data[i][3]) || 0; // ¡Ahora está en la columna 3!
-    const currentPrice = parseFloat(data[i][4]) || 0; // ¡Y currentPrice en columna 4!
+           const qty = parseFloat(data[i][1]) || 0;
+    const buyPrice = parseFloat(data[i][3]) || 0;
+    const currentPrice = parseFloat(data[i][4]) || 0;
+    const targetPrice = parseFloat(data[i][5]) || 0; // Precio Objetivo
+        // Verificar alerta de precio
+    let alertStatus = "";
+    if (targetPrice > 0 && currentPrice > 0) {
+        if (currentPrice >= targetPrice) {
+            alertStatus = "🎯 ¡ALCANZADO!";
+            // Mostrar notificación (solo una vez por sesión)
+            if (!localStorage.getItem(`alertShown_${i}`)) {
+                alert(`🔔 ¡Alerta de precio! ${data[i][0]} ha alcanzado tu objetivo: $${targetPrice}`);
+                localStorage.setItem(`alertShown_${i}`, "true");
+            }
+        } else {
+            alertStatus = `⏳ ${((targetPrice - currentPrice) / targetPrice * 100).toFixed(1)}% por alcanzar`;
+        }
+    }
 
-       data[i][5] = isNaN(invested) ? "" : invested.toFixed(2); // Valor Invertido (columna 5)
-    data[i][6] = isNaN(current) ? "" : current.toFixed(2); // Valor Actual (columna 6)
-    data[i][7] = currentPrice > 0 ? gainPercent.toFixed(2) + "%" : ""; // Ganancia % (columna 7)
-
+       data[i][7] = isNaN(invested) ? "" : invested.toFixed(2); // Valor Invertido (columna 7)
+    data[i][8] = isNaN(current) ? "" : current.toFixed(2); // Valor Actual (columna 8)
+    data[i][9] = currentPrice > 0 ? gainPercent.toFixed(2) + "%" : ""; // Ganancia % (columna 9)
     // Aplicar color según ganancia/pérdida
-       const cell = hot.getCell(i, 7); // Ahora la ganancia está en columna 7
+           const cell = hot.getCell(i, 9); // Ganancia % ahora está en columna 9
     if (cell) {
       if (gainPercent > 0) {
         cell.style.color = "green";
