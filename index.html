@@ -8,16 +8,140 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; }
+        input, select { padding: 8px; font-size: 16px; }
     </style>
 </head>
 <body>
     <h1>📊 Comparador de Inversiones - Precios en Vivo</h1>
-    <p>Ingresa tus activos (CEDEARs, acciones, bonos). Ej: AAPL, CEDEAR.MELI, GD30</p>
 
+    <!-- CONVERSOR DE MONEDAS -->
+    <div style="background:#f5f5f5; padding:20px; border-radius:10px; margin-bottom:30px;">
+        <h3>💱 Conversor de Monedas en Tiempo Real</h3>
+        <label>De: </label>
+        <select id="fromCurrency">
+            <option value="USD">USD - Dólar Estadounidense</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="ARS">ARS - Peso Argentino</option>
+            <option value="BRL">BRL - Real Brasileño</option>
+            <option value="GBP">GBP - Libra Esterlina</option>
+        </select>
+
+        <label> A: </label>
+        <select id="toCurrency">
+            <option value="ARS">ARS - Peso Argentino</option>
+            <option value="USD">USD - Dólar Estadounidense</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="BRL">BRL - Real Brasileño</option>
+            <option value="GBP">GBP - Libra Esterlina</option>
+        </select>
+
+        <br><br>
+        <input type="number" id="amount" placeholder="Ingresa monto" value="1" style="padding:8px; font-size:16px; width:200px;">
+        <button onclick="convertCurrency()" style="padding:10px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer;">🔄 Convertir</button>
+        <h2 id="result" style="margin-top:20px; color:#28a745;">—</h2>
+    </div>
+
+    <!-- BUSCADOR DE ACTIVOS -->
+    <div style="margin:30px 0; padding:20px; background:#e3f2fd; border-radius:10px;">
+        <h3>🔍 Buscador de Activos Financieros</h3>
+        <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: MELI, Apple, GD30)" style="width:100%; padding:10px; font-size:16px;">
+        <div id="searchResults" style="margin-top:15px; max-height:200px; overflow-y:auto; background:white; padding:10px; border-radius:5px;"></div>
+    </div>
+
+    <!-- TABLA DE INVERSIONES -->
     <div id="spreadsheet"></div>
 
     <button onclick="fetchPrices()">🔄 Actualizar Precios</button>
     <button onclick="calculateMetrics()">🧮 Calcular Ganancias</button>
+
+    <!-- SCRIPTS -->
+    <script>
+    async function convertCurrency() {
+        const from = document.getElementById('fromCurrency').value;
+        const to = document.getElementById('toCurrency').value;
+        const amount = parseFloat(document.getElementById('amount').value) || 1;
+
+        if (from === to) {
+            document.getElementById('result').innerText = `${amount} ${from} = ${amount} ${to}`;
+            return;
+        }
+
+        try {
+            const proxyUrl = "https://corsproxy.io/?";
+            const apiUrl = `https://v6.exchangerate-api.com/v6/8d8e9a0a9b1f4a0c9b0e9b0e/latest/${from}`;
+
+            const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+            const data = await response.json();
+
+            if (data.result === "success") {
+                const rate = data.conversion_rates[to];
+                const converted = (amount * rate).toFixed(4);
+                document.getElementById('result').innerText = `${amount} ${from} = ${converted} ${to}`;
+            } else {
+                document.getElementById('result').innerText = "Error obteniendo tasa";
+            }
+        } catch (e) {
+            document.getElementById('result').innerText = "Error de conexión";
+            console.log(e);
+        }
+    }
+
+    // Convertir al cargar
+    setTimeout(convertCurrency, 1000);
+    </script>
+
+    <script>
+    const assets = [
+        { name: "MercadoLibre", ticker: "MELI", type: "Acción NYSE" },
+        { name: "Apple", ticker: "AAPL", type: "Acción NYSE" },
+        { name: "Tesla", ticker: "TSLA", type: "Acción NYSE" },
+        { name: "Amazon", ticker: "AMZN", type: "Acción NYSE" },
+        { name: "Microsoft", ticker: "MSFT", type: "Acción NYSE" },
+        { name: "Alibaba", ticker: "BABA", type: "Acción NYSE" },
+        { name: "YPF", ticker: "YPF", type: "Acción NYSE/BCBA" },
+        { name: "Bono GD30", ticker: "GD30.BA", type: "Bono Argentina" },
+        { name: "Bono TV25", ticker: "TV25.BA", type: "Bono Argentina" },
+        { name: "CEDEAR MercadoLibre", ticker: "CEDEAR.MELI", type: "CEDEAR Argentina" },
+        { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR Argentina" },
+        { name: "CEDEAR Tesla", ticker: "CEDEAR.TSLA", type: "CEDEAR Argentina" },
+        { name: "S&P 500", ticker: "^GSPC", type: "Índice" },
+        { name: "Dow Jones", ticker: "^DJI", type: "Índice" },
+        { name: "Nasdaq", ticker: "^IXIC", type: "Índice" },
+        { name: "Oro", ticker: "GC=F", type: "Materia Prima" },
+        { name: "Petróleo WTI", ticker: "CL=F", type: "Materia Prima" }
+    ];
+
+    document.getElementById('assetSearch').addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        const resultsDiv = document.getElementById('searchResults');
+        resultsDiv.innerHTML = '';
+
+        if (term.length < 2) return;
+
+        const filtered = assets.filter(a => 
+            a.name.toLowerCase().includes(term) || a.ticker.toLowerCase().includes(term)
+        );
+
+        if (filtered.length === 0) {
+            resultsDiv.innerHTML = "<p>No se encontraron resultados.</p>";
+            return;
+        }
+
+        filtered.forEach(asset => {
+            const div = document.createElement('div');
+            div.style.padding = "8px";
+            div.style.borderBottom = "1px solid #eee";
+            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type})</small>`;
+            div.style.cursor = "pointer";
+            div.onclick = function() {
+                alert(`Seleccionaste: ${asset.ticker} - ${asset.name}\nPuedes copiar el ticker y pegarlo en la primera columna de la tabla.`);
+                document.getElementById('assetSearch').value = '';
+                resultsDiv.innerHTML = '';
+            };
+            resultsDiv.appendChild(div);
+        });
+    });
+    </script>
 
     <script src="app.js"></script>
 </body>
