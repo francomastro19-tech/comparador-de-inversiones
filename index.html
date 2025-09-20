@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>📊 Comparador de Inversiones - CEDEARs, Bonos, Acciones</title>
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
@@ -50,10 +51,75 @@
 
     <!-- TABLA DE INVERSIONES -->
     <div id="spreadsheet"></div>
-
+    <h2>📈 Distribución de mi Portafolio (Valor Actual)</h2>
+    <div style="width: 500px; height: 500px; margin: 30px auto;">
+        <canvas id="portfolioChart"></canvas>
+    </div>
     <button onclick="fetchPrices()">🔄 Actualizar Precios</button>
-    <button onclick="calculateMetrics()">🧮 Calcular Ganancias</button>
+       setTimeout(calculateMetrics, 1000);
+    setTimeout(updatePortfolioChart, 1500); // Dibujar gráfico después de calcular
+function updatePortfolioChart() {
+    const data = hot.getData();
+        updatePortfolioChart();
+    const labels = [];
+    const values = [];
+    const colors = [];
 
+    // Recorrer filas (empezando desde la 1, la 0 es el encabezado)
+    for (let i = 1; i < data.length; i++) {
+        const name = data[i][0]; // Nombre del activo
+        const currentValue = parseFloat(data[i][6]); // Valor Actual (columna 6)
+
+        if (name && !isNaN(currentValue) && currentValue > 0) {
+            labels.push(name);
+            values.push(currentValue);
+
+            // Generar color aleatorio
+            const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+            colors.push(color);
+        }
+    }
+
+    // Destruir gráfico anterior si existe
+    const existingChart = Chart.getChart("portfolioChart");
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    // Crear nuevo gráfico
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                 values,
+                backgroundColor: colors,
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(2);
+                            return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
     <!-- SCRIPTS -->
     <script>
     async function convertCurrency() {
