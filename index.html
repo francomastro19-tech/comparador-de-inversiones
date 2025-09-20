@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Comparador de Inversiones - CEDEARs, Bonos, Acciones</title>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; }
+    </style>
+</head>
+<body>
+    <h1>📊 Comparador de Inversiones - Precios en Vivo</h1>
+    <p>Ingresa tus activos (CEDEARs, acciones, bonos). Ej: AAPL, CEDEAR.MELI, GD30</p>
+
+    <div id="spreadsheet"></div>
+
+    <button onclick="fetchPrices()">🔄 Actualizar Precios</button>
+    <button onclick="calculateMetrics()">🧮 Calcular Ganancias</button>
+
+    <script src="app.js"></script>
+</body>
+</html>
