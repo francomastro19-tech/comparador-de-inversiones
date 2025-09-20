@@ -3,10 +3,9 @@ const container = document.getElementById('spreadsheet');
 const hot = new Handsontable(container, {
   data: [
          ["Nombre de la Inversión (Ticker)", "Cantidad Comprada", "Fecha de Compra (YYYY-MM-DD)", "Precio de Compra (USD)", "Precio Actual (USD)", "Valor Invertido (USD)", "Valor Actual (USD)", "Ganancia/Perdida (%)"],,,
-    ["CEDEAR.MELI", 5, 15000, "", "", "", ""],
-    ["AAPL", 10, 150, "", "", "", ""],
-    ["GD30", 2, 50000, "", "", "", ""]
-  ],
+        ["CEDEAR.MELI", 5, "2024-01-15", 15000, "", "", "", ""],
+    ["AAPL", 10, "2024-03-10", 150, "", "", "", ""],
+    ["GD30", 2, "2024-02-05", 50000, "", "", "", ""],
   colHeaders: true,
   rowHeaders: true,
   formulas: true,
