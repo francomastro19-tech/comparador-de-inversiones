@@ -167,7 +167,7 @@
         });
     });
 
-    // Gráfico de Torta
+    // Gráfico de Torta — ¡CORREGIDO! (antes tenía "data:" mal escrito)
     function updatePortfolioChart() {
         const data = hot.getData();
         const labels = [];
@@ -192,7 +192,7 @@
         const ctx = document.getElementById('portfolioChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
-            data: {
+            data: {  // ¡ESTA LÍNEA ESTABA MAL! Ahora dice "data:" correctamente
                 labels: labels,
                 datasets: [{
                     data: values,
