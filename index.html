@@ -9,21 +9,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #2c3e50; text-align: center; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 40px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         button { padding: 12px 24px; font-size: 16px; margin: 10px 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-update { background: #28a745; color: white; }
         .btn-calculate { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
         .section { margin: 30px 0; padding: 20px; border-radius: 10px; background: #f8f9fa; }
         #searchResults div { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         #searchResults div:hover { background: #e3f2fd; }
         .positive { color: green !important; font-weight: bold; }
         .negative { color: red !important; font-weight: bold; }
+        .summary-box { background: #e8f5e9; border-left: 5px solid #28a745; padding: 20px; margin-bottom: 30px; border-radius: 10px; }
+        .summary-item { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 Comparador de Inversiones Profesional</h1>
+        <h1>💼 Mi Portafolio de Inversiones Profesional</h1>
 
         <!-- Conversor de Monedas -->
         <div class="section">
@@ -55,24 +58,52 @@
         <!-- Buscador de Activos -->
         <div class="section">
             <h3>🔍 Buscador de Activos Financieros (500+ empresas, índices, bonos)</h3>
-            <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: MELI, Apple, GD30, ^GSPC)" style="width:100%; padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc;">
+            <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: YPFD, BRKB, AL35, ^GSPC)" style="width:100%; padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc;">
             <div id="searchResults" style="margin-top:15px; max-height:200px; overflow-y:auto; background:white; padding:15px; border-radius:8px; border:1px solid #eee;"></div>
+        </div>
+
+        <!-- Resumen de Cartera -->
+        <div class="summary-box">
+            <h3>📈 Resumen de mi Cartera</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Total Invertido</h4>
+                    <h2 id="totalInvertido" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
+                </div>
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Valor Actual</h4>
+                    <h2 id="valorActualTotal" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
+                </div>
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Rendimiento Ponderado</h4>
+                    <h2 id="rendimientoPonderado" style="margin: 10px 0; font-size: 24px; color: #212529;">0.00%</h2>
+                </div>
+            </div>
         </div>
 
         <!-- Tabla de Inversiones -->
         <div class="section">
-            <h2>💼 Mi Portafolio de Inversiones</h2>
-            <div id="spreadsheet" style="width:100%;"></div>
+            <h2>📊 Gestión de Inversiones (Formato Excel Mejorado)</h2>
+            <div id="spreadsheet" style="width: 100%; height: 800px;"></div>
 
             <button onclick="fetchPrices()" class="btn-update">🔄 Actualizar Precios en Vivo</button>
-            <button onclick="calculateMetrics()" class="btn-calculate">🧮 Calcular Métricas y Gráfico</button>
+            <button onclick="calculateMetrics()" class="btn-calculate">🧮 Calcular Métricas</button>
+            <button onclick="addRow()" class="btn-success">➕ Agregar Fila</button>
         </div>
 
         <!-- Gráfico de Torta -->
         <div class="section">
-            <h2>📈 Distribución de mi Portafolio (Valor Actual)</h2>
+            <h2>🍩 Distribución de mi Portafolio (Valor Actual)</h2>
             <div style="width: 100%; max-width: 600px; height: 600px; margin: 0 auto;">
                 <canvas id="portfolioChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico por Tipo de Activo -->
+        <div class="section">
+            <h2>📊 Distribución por Tipo de Activo</h2>
+            <div style="width: 100%; max-width: 800px; height: 500px; margin: 0 auto;">
+                <canvas id="tipoActivoChart"></canvas>
             </div>
         </div>
     </div>
@@ -123,17 +154,25 @@
         { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
         { name: "CEDEAR Microsoft", ticker: "CEDEAR.MSFT", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
         { name: "CEDEAR Amazon", ticker: "CEDEAR.AMZN", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Berkshire Hathaway", ticker: "CEDEAR.BRKB", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Citigroup", ticker: "CEDEAR.C", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Google", ticker: "CEDEAR.GOOGL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR NVIDIA", ticker: "CEDEAR.NVDA", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Occidental Petroleum", ticker: "CEDEAR.OXY", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
+        { name: "CEDEAR Procter & Gamble", ticker: "CEDEAR.PG", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
         // 🇦🇷 Empresas Locales
-        { name: "YPF S.A.", ticker: "YPF", type: "Acción", country: "Argentina", exchange: "NYSE/BYMA" },
-        { name: "Grupo Galicia", ticker: "GGAL", type: "Acción", country: "Argentina", exchange: "NASDAQ/BYMA" },
+        { name: "YPF S.A.", ticker: "YPFD", type: "Acción", country: "Argentina", exchange: "BYMA" },
+        { name: "Grupo Galicia", ticker: "GGAL", type: "Acción", country: "Argentina", exchange: "BYMA" },
         // 📈 Índices
         { name: "S&P 500", ticker: "^GSPC", type: "Índice", country: "USA", exchange: "NYSE" },
         { name: "Dow Jones Industrial", ticker: "^DJI", type: "Índice", country: "USA", exchange: "NYSE" },
         { name: "Nasdaq Composite", ticker: "^IXIC", type: "Índice", country: "USA", exchange: "NASDAQ" },
         // 📉 Bonos
+        { name: "Bono Argentina AL35", ticker: "AL35.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
+        { name: "Bono Argentina AE38", ticker: "AE38.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
         { name: "Bono Argentina GD30", ticker: "GD30.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
         { name: "Bono Argentina TV25", ticker: "TV25.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-        // 🌍 Más activos (puedes expandirlo)
+        // 🌍 Más activos
         { name: "Bitcoin USD", ticker: "BTC-USD", type: "Cripto", country: "Global", exchange: "Coinbase" },
         { name: "Oro (Gold)", ticker: "GC=F", type: "Materia Prima", country: "Global", exchange: "COMEX" }
     ];
@@ -156,10 +195,10 @@
 
         filtered.forEach(asset => {
             const div = document.createElement('div');
-            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type} - ${asset.country})</small>`;
+            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type})</small>`;
             div.style.cursor = "pointer";
             div.onclick = function() {
-                alert(`✅ Copiá y pegá este ticker en la primera columna de tu tabla:\n\n${asset.ticker}`);
+                alert(`✅ Copiá y pegá este ticker en la columna "Abreviatura" de tu tabla:\n\n${asset.ticker}`);
                 document.getElementById('assetSearch').value = '';
                 resultsDiv.innerHTML = '';
             };
@@ -167,7 +206,7 @@
         });
     });
 
-    // Gráfico de Torta — ¡CORREGIDO! (antes tenía "data:" mal escrito)
+    // Gráfico de Torta
     function updatePortfolioChart() {
         const data = hot.getData();
         const labels = [];
@@ -175,12 +214,12 @@
         const colors = [];
 
         for (let i = 1; i < data.length; i++) {
-            const name = data[i][0];
-            const currentValue = parseFloat(data[i][8]); // Valor Actual (columna 8)
+            const abreviatura = data[i][5] || '';
+            const hoyNeto = parseFloat(data[i][9]) || 0;
 
-            if (name && !isNaN(currentValue) && currentValue > 0) {
-                labels.push(name);
-                values.push(currentValue);
+            if (abreviatura && hoyNeto > 0) {
+                labels.push(abreviatura);
+                values.push(hoyNeto);
                 const color = '#' + Math.floor(Math.random()*16777215).toString(16);
                 colors.push(color);
             }
@@ -192,10 +231,10 @@
         const ctx = document.getElementById('portfolioChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
-            data: {  // ¡ESTA LÍNEA ESTABA MAL! Ahora dice "data:" correctamente
+             {
                 labels: labels,
                 datasets: [{
-                    data: values,
+                     values,
                     backgroundColor: colors,
                     borderColor: '#fff',
                     borderWidth: 2
@@ -213,6 +252,91 @@
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((value / total) * 100).toFixed(2);
                                 return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico por Tipo de Activo
+    function updateTipoActivoChart() {
+        const data = hot.getData();
+        const tipos = {};
+        const colores = {
+            'Acción': '#FF6384',
+            'CEDEAR': '#36A2EB',
+            'Bono': '#FFCE56',
+            'Cripto': '#4BC0C0',
+            'Materia Prima': '#9966FF',
+            'Índice': '#FF9F40',
+            'Otro': '#C9CBCF'
+        };
+
+        for (let i = 1; i < data.length; i++) {
+            const abreviatura = data[i][5] || '';
+            const hoyNeto = parseFloat(data[i][9]) || 0;
+            let tipo = 'Otro';
+
+            if (abreviatura.includes('YPF') || abreviatura.includes('GGAL') || abreviatura.includes('ALUA') || abreviatura.includes('TXAR')) {
+                tipo = 'Acción';
+            } else if (abreviatura.includes('CEDEAR')) {
+                tipo = 'CEDEAR';
+            } else if (abreviatura.includes('AL35') || abreviatura.includes('AE38') || abreviatura.includes('GD30') || abreviatura.includes('TV25')) {
+                tipo = 'Bono';
+            } else if (abreviatura.includes('BTC') || abreviatura.includes('ETH')) {
+                tipo = 'Cripto';
+            } else if (abreviatura.includes('^')) {
+                tipo = 'Índice';
+            } else if (abreviatura.includes('GC=F') || abreviatura.includes('CL=F')) {
+                tipo = 'Materia Prima';
+            }
+
+            if (!tipos[tipo]) {
+                tipos[tipo] = 0;
+            }
+            tipos[tipo] += hoyNeto;
+        }
+
+        const labels = Object.keys(tipos);
+        const values = Object.values(tipos);
+        const backgroundColors = labels.map(label => colores[label] || colores['Otro']);
+
+        const existingChart = Chart.getChart("tipoActivoChart");
+        if (existingChart) existingChart.destroy();
+
+        const ctx = document.getElementById('tipoActivoChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+             {
+                labels: labels,
+                datasets: [{
+                     values,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw || 0;
+                                return `$${value.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString('es-AR');
                             }
                         }
                     }
