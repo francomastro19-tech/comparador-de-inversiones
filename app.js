@@ -16,20 +16,16 @@ const hot = new Handsontable(container, {
 function calculateMetrics() {
   const data = hot.getData();
   for (let i = 1; i < data.length; i++) {
-    const qty = parseFloat(data[i][1]) || 0;
-    const buyPrice = parseFloat(data[i][2]) || 0;
-    const currentPrice = parseFloat(data[i][3]) || 0;
+        const qty = parseFloat(data[i][1]) || 0;
+    const buyPrice = parseFloat(data[i][3]) || 0; // ¡Ahora está en la columna 3!
+    const currentPrice = parseFloat(data[i][4]) || 0; // ¡Y currentPrice en columna 4!
 
-    const invested = qty * buyPrice;
-    const current = qty * currentPrice;
-    const gainPercent = currentPrice > 0 ? ((currentPrice - buyPrice) / buyPrice) * 100 : 0;
-
-    data[i][4] = isNaN(invested) ? "" : invested.toFixed(2); // Valor Invertido
-    data[i][5] = isNaN(current) ? "" : current.toFixed(2); // Valor Actual
-    data[i][6] = currentPrice > 0 ? gainPercent.toFixed(2) + "%" : "";
+       data[i][5] = isNaN(invested) ? "" : invested.toFixed(2); // Valor Invertido (columna 5)
+    data[i][6] = isNaN(current) ? "" : current.toFixed(2); // Valor Actual (columna 6)
+    data[i][7] = currentPrice > 0 ? gainPercent.toFixed(2) + "%" : ""; // Ganancia % (columna 7)
 
     // Aplicar color según ganancia/pérdida
-    const cell = hot.getCell(i, 6); // Fila i, columna 6 (Ganancia %)
+       const cell = hot.getCell(i, 7); // Ahora la ganancia está en columna 7
     if (cell) {
       if (gainPercent > 0) {
         cell.style.color = "green";
@@ -87,3 +83,24 @@ async function fetchPrices() {
 
 // Calcular al cargar la página
 setTimeout(calculateMetrics, 1000);
+// Guardar datos al actualizar
+function saveData() {
+  const data = hot.getData();
+  localStorage.setItem('investmentData', JSON.stringify(data));
+}
+
+// Cargar datos guardados al iniciar
+function loadData() {
+  const saved = localStorage.getItem('investmentData');
+  if (saved) {
+    const data = JSON.parse(saved);
+    hot.loadData(data);
+    calculateMetrics(); // Recalcular al cargar
+  }
+}
+
+// Guardar cada vez que se modifica la tabla
+hot.addHook('afterChange', saveData);
+
+// Cargar al inicio
+setTimeout(loadData, 1000);
