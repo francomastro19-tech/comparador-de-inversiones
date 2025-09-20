@@ -92,24 +92,22 @@
 
     <script>
     const assets = [
-        { name: "MercadoLibre", ticker: "MELI", type: "Acción NYSE" },
-        { name: "Apple", ticker: "AAPL", type: "Acción NYSE" },
-        { name: "Tesla", ticker: "TSLA", type: "Acción NYSE" },
-        { name: "Amazon", ticker: "AMZN", type: "Acción NYSE" },
-        { name: "Microsoft", ticker: "MSFT", type: "Acción NYSE" },
-        { name: "Alibaba", ticker: "BABA", type: "Acción NYSE" },
-        { name: "YPF", ticker: "YPF", type: "Acción NYSE/BCBA" },
-        { name: "Bono GD30", ticker: "GD30.BA", type: "Bono Argentina" },
-        { name: "Bono TV25", ticker: "TV25.BA", type: "Bono Argentina" },
-        { name: "CEDEAR MercadoLibre", ticker: "CEDEAR.MELI", type: "CEDEAR Argentina" },
-        { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR Argentina" },
-        { name: "CEDEAR Tesla", ticker: "CEDEAR.TSLA", type: "CEDEAR Argentina" },
-        { name: "S&P 500", ticker: "^GSPC", type: "Índice" },
-        { name: "Dow Jones", ticker: "^DJI", type: "Índice" },
-        { name: "Nasdaq", ticker: "^IXIC", type: "Índice" },
-        { name: "Oro", ticker: "GC=F", type: "Materia Prima" },
-        { name: "Petróleo WTI", ticker: "CL=F", type: "Materia Prima" }
-    ];
+    // 🇺🇸 USA - Top Empresas (S&P 500 / NASDAQ 100)
+    { name: "Apple Inc.", ticker: "AAPL", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Microsoft Corp.", ticker: "MSFT", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Amazon.com Inc.", ticker: "AMZN", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Alphabet Inc. (Google)", ticker: "GOOGL", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Meta Platforms (Facebook)", ticker: "META", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "NVIDIA Corporation", ticker: "NVDA", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Tesla Inc.", ticker: "TSLA", type: "Acción", country: "USA", exchange: "NASDAQ" },
+    { name: "Berkshire Hathaway", ticker: "BRK.B", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "JPMorgan Chase & Co.", ticker: "JPM", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "Visa Inc.", ticker: "V", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "Johnson & Johnson", ticker: "JNJ", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "Walmart Inc.", ticker: "WMT", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "Procter & Gamble", ticker: "PG", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "Mastercard Inc.", ticker: "MA", type: "Acción", country: "USA", exchange: "NYSE" },
+    { name: "UnitedHealth Group", ticker
 
     document.getElementById('assetSearch').addEventListener('input', function() {
         const term = this.value.toLowerCase();
