@@ -1,18 +1,13 @@
-// Inicializar Handsontable
+// Inicializar Handsontable SIN datos en la configuración
 const container = document.getElementById('spreadsheet');
 const hot = new Handsontable(container, {
-     [
-        ["Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"],
-        ["2025-04-11", "COMPRA", 4936800, 28050, 176, "YPFD", 43500, 50000, "", "", "", "", "", ""],
-        ["2025-04-08", "COMPRA", 4937700, 22650, 218, "CEDEAR.BRKB", 27450, 30000, "", "", "", "", "", ""],
-        ["2025-04-11", "COMPRA", 4932000, 20550, 240, "CEDEAR.C", 30000, 35000, "", "", "", "", "", ""],
-        ["2025-04-07", "COMPRA", 19950000, 3990, 5000, "CEDEAR.NVDA", 6900, 8000, "", "", "", "", "", ""],
-        ["2025-04-09", "COMPRA", 4949880, 7410, 668, "CEDEAR.OXY", 9860, 11000, "", "", "", "", "", ""],
-        ["2025-04-11", "COMPRA", 4939350, 11050, 447, "CEDEAR.PG", 13400, 15000, "", "", "", "", "", ""],
-        ["2025-04-11", "COMPRA", 17807587.50, 712.30, 25000, "AL35.BA", 822.90, 900, "", "", "", "", "", ""],
-        ["2025-04-08", "COMPRA", 11811895.73, 696.66, 16955, "AE38.BA", 858.70, 950, "", "", "", "", "", ""]
+    startRows: 15,
+    startCols: 14,
+    colHeaders: [
+        "Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
+        "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
+        "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"
     ],
-    colHeaders: true,
     rowHeaders: true,
     contextMenu: true,
     formulas: true,
@@ -35,6 +30,22 @@ const hot = new Handsontable(container, {
         { type: 'numeric', format: '0.00%', readOnly: true }  // Drawdown
     ]
 });
+
+// Datos iniciales (como en tu Excel)
+const initialData = [
+    ["Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"],
+    ["2025-04-11", "COMPRA", 4936800, 28050, 176, "YPFD", 43500, 50000, "", "", "", "", "", ""],
+    ["2025-04-08", "COMPRA", 4937700, 22650, 218, "CEDEAR.BRKB", 27450, 30000, "", "", "", "", "", ""],
+    ["2025-04-11", "COMPRA", 4932000, 20550, 240, "CEDEAR.C", 30000, 35000, "", "", "", "", "", ""],
+    ["2025-04-07", "COMPRA", 19950000, 3990, 5000, "CEDEAR.NVDA", 6900, 8000, "", "", "", "", "", ""],
+    ["2025-04-09", "COMPRA", 4949880, 7410, 668, "CEDEAR.OXY", 9860, 11000, "", "", "", "", "", ""],
+    ["2025-04-11", "COMPRA", 4939350, 11050, 447, "CEDEAR.PG", 13400, 15000, "", "", "", "", "", ""],
+    ["2025-04-11", "COMPRA", 17807587.50, 712.30, 25000, "AL35.BA", 822.90, 900, "", "", "", "", "", ""],
+    ["2025-04-08", "COMPRA", 11811895.73, 696.66, 16955, "AE38.BA", 858.70, 950, "", "", "", "", "", ""]
+];
+
+// Cargar datos después de inicializar
+hot.loadData(initialData);
 
 // Calcular métricas, resumen, gráficos y alertas
 function calculateMetrics() {
