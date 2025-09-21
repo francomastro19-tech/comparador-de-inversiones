@@ -255,3 +255,52 @@ function updateTipoActivoChart() {
             datasets: [{
                 data: values,
                 backgroundColor
+// Función para inicializar la tabla
+function initializeTable() {
+    const container = document.getElementById('spreadsheet');
+    if (!container) {
+        console.error('No se encontró el contenedor de la tabla');
+        return;
+    }
+
+    const hot = new Handsontable(container, {
+        startRows: 15,
+        startCols: 14,
+        colHeaders: [
+            "Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
+            "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
+            "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"
+        ],
+        rowHeaders: true,
+        contextMenu: true,
+        formulas: true,
+        height: 'auto',
+        licenseKey: 'non-commercial-and-evaluation',
+        columns: [
+            {}, // Fecha
+            {}, // Operación
+            { type: 'numeric', format: '0,0.00' }, // Monto Transferido
+            { type: 'numeric', format: '0,0.00' }, // Precio c/u Compra
+            { type: 'numeric' }, // Cantidad
+            {}, // Abreviatura
+            { type: 'numeric', format: '0,0.00' }, // Precio c/u HOY
+            { type: 'numeric', format: '0,0.00' }, // Precio Objetivo
+            {}, // Estado Alerta
+            { type: 'numeric', format: '0,0.00', readOnly: true }, // HOY NETO
+            { type: 'numeric', format: '0,0.00', readOnly: true }, // Diferencia $
+            { type: 'numeric', format: '0.00%', readOnly: true },  // Rendimiento %
+            { type: 'numeric', format: '0,0.00', readOnly: true }, // Máximo Histórico
+            { type: 'numeric', format: '0.00%', readOnly: true }  // Drawdown
+        ]
+    });
+
+    return hot;
+}
+
+// Inicializar la tabla cuando se cargue la página
+document.addEventListener('DOMContentLoaded', () => {
+    const hot = initializeTable();
+    if (hot) {
+        console.log('Tabla inicializada correctamente');
+    }
+});
