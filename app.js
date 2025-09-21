@@ -49,6 +49,12 @@ const initialData = [
 // Cargar datos iniciales
 hot.loadData(initialData);
 
+// Función para agregar fila
+function addRow() {
+    const rowCount = hot.countRows();
+    hot.alter('insert_row', rowCount);
+}
+
 // Función para actualizar precios en tiempo real
 async function fetchPrices() {
     const data = hot.getData();
@@ -137,43 +143,6 @@ function calculateMetrics() {
     }
 
     hot.loadData(data);
-}
-
-// Función para agregar fila
-function addRow() {
-    const rowCount = hot.countRows();
-    hot.alter('insert_row', rowCount);
-}
-
-// Función para convertir monedas
-async function convertCurrency() {
-    const from = document.getElementById('fromCurrency').value;
-    const to = document.getElementById('toCurrency').value;
-    const amount = parseFloat(document.getElementById('amount').value) || 1;
-
-    if (from === to) {
-        document.getElementById('result').innerText = `${amount} ${from} = ${amount} ${to}`;
-        return;
-    }
-
-    try {
-        const proxyUrl = "https://corsproxy.io/?";
-        const apiUrl = `https://v6.exchangerate-api.com/v6/8d8e9a0a9b1f4a0c9b0e9b0e/latest/${from}`;
-
-        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
-        const data = await response.json();
-
-        if (data.result === "success") {
-            const rate = data.conversion_rates[to];
-            const converted = (amount * rate).toFixed(4);
-            document.getElementById('result').innerText = `${amount} ${from} = ${converted} ${to}`;
-        } else {
-            document.getElementById('result').innerText = "Error obteniendo tasa";
-        }
-    } catch (e) {
-        document.getElementById('result').innerText = "Error de conexión";
-        console.log(e);
-    }
 }
 
 // Función para actualizar gráficos
@@ -273,4 +242,16 @@ function updateTipoActivoChart() {
 
     const labels = Object.keys(tipos);
     const values = Object.values(tipos);
-    const backgroundColors = labels.map(label => colores[label]
+    const backgroundColors = labels.map(label => colores[label] || colores['Otro']);
+
+    const existingChart = Chart.getChart("tipoActivoChart");
+    if (existingChart) existingChart.destroy();
+
+    const ctx = document.getElementById('tipoActivoChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor
