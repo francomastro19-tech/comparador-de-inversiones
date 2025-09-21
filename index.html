@@ -16,43 +16,33 @@
         .btn-calculate { background: #007bff; color: white; }
         .btn-success { background: #28a745; color: white; }
         .section { margin: 30px 0; padding: 20px; border-radius: 10px; background: #f8f9fa; }
-        #searchResults div { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
-        #searchResults div:hover { background: #e3f2fd; }
-        .positive { color: green !important; font-weight: bold; }
-        .negative { color: red !important; font-weight: bold; }
         .summary-box { background: #e8f5e9; border-left: 5px solid #28a745; padding: 20px; margin-bottom: 30px; border-radius: 10px; }
         .summary-item { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 10px 0; }
+        .positive { color: green !important; font-weight: bold; }
+        .negative { color: red !important; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>💼 Mi Portafolio de Inversiones Profesional</h1>
 
-        <!-- Conversor de Monedas -->
-        <div class="section">
-            <h3>💱 Conversor de Monedas en Tiempo Real</h3>
-            <label>De: </label>
-            <select id="fromCurrency">
-                <option value="USD">USD - Dólar Estadounidense</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="ARS">ARS - Peso Argentino</option>
-                <option value="BRL">BRL - Real Brasileño</option>
-                <option value="GBP">GBP - Libra Esterlina</option>
-            </select>
-
-            <label> A: </label>
-            <select id="toCurrency">
-                <option value="ARS">ARS - Peso Argentino</option>
-                <option value="USD">USD - Dólar Estadounidense</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="BRL">BRL - Real Brasileño</option>
-                <option value="GBP">GBP - Libra Esterlina</option>
-            </select>
-
-            <br><br>
-            <input type="number" id="amount" placeholder="Ingresa monto" value="1" style="padding:10px; font-size:16px; width:200px; border-radius:5px; border:1px solid #ccc;">
-            <button onclick="convertCurrency()" style="padding:12px 24px; background:#6f42c1; color:white; border:none; border-radius:8px; cursor:pointer;">🔄 Convertir</button>
-            <h2 id="result" style="margin-top:20px; color:#28a745; font-size:24px;">—</h2>
+        <!-- Resumen de Cartera -->
+        <div class="summary-box">
+            <h3>📈 Resumen de mi Cartera</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Total Invertido</h4>
+                    <h2 id="totalInvertido" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
+                </div>
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Valor Actual</h4>
+                    <h2 id="valorActualTotal" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
+                </div>
+                <div class="summary-item">
+                    <h4 style="margin: 0; color: #6c757d;">Rendimiento Ponderado</h4>
+                    <h2 id="rendimientoPonderado" style="margin: 10px 0; font-size: 24px; color: #212529;">0.00%</h2>
+                </div>
+            </div>
         </div>
 
         <!-- Tabla de Inversiones -->
@@ -82,140 +72,6 @@
         </div>
     </div>
 
-    <script>
-        // Configuración de fuentes de datos gratuitas
-        const DATA_SOURCES = {
-            stock: 'https://finnhub.io/api/v1/quote?symbol=',
-            currency: 'https://api.exchangerate-api.com/v4/latest/',
-            crypto: 'https://min-api.cryptocompare.com/data/price?fsym=',
-            commodities: 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol='
-        };
-
-        // Inicialización de la tabla
-        const container = document.getElementById('spreadsheet');
-        const hot = new Handsontable(container, {
-            startRows: 15,
-            startCols: 14,
-            colHeaders: [
-                "Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
-                "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
-                "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"
-            ],
-            rowHeaders: true,
-            contextMenu: true,
-            formulas: true,
-            height: 'auto',
-            licenseKey: 'non-commercial-and-evaluation',
-            columns: [
-                {}, // Fecha
-                {}, // Operación
-                { type: 'numeric', format: '0,0.00' }, // Monto Transferido
-                { type: 'numeric', format: '0,0.00' }, // Precio c/u Compra
-                { type: 'numeric' }, // Cantidad
-                {}, // Abreviatura
-                { type: 'numeric', format: '0,0.00' }, // Precio c/u HOY
-                { type: 'numeric', format: '0,0.00' }, // Precio Objetivo
-                {}, // Estado Alerta
-                { type: 'numeric', format: '0,0.00', readOnly: true }, // HOY NETO
-                { type: 'numeric', format: '0,0.00', readOnly: true }, // Diferencia $
-                { type: 'numeric', format: '0.00%', readOnly: true },  // Rendimiento %
-                { type: 'numeric', format: '0,0.00', readOnly: true }, // Máximo Histórico
-                { type: 'numeric', format: '0.00%', readOnly: true }  // Drawdown
-            ]
-        });
-
-        // Datos iniciales
-        const initialData = [
-            ["Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
-             "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
-             "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"]
-        ];
-
-        // Cargar datos iniciales
-        hot.loadData(initialData);
-
-        // Función para actualizar precios en tiempo real
-        async function fetchPrices() {
-            const data = hot.getData();
-            const tickers = new Set();
-            
-            // Recopilar todos los tickers únicos
-            for (let i = 1; i < data.length; i++) {
-                if (data[i][5]) tickers.add(data[i][5]);
-            }
-
-            // Actualizar precios para cada ticker
-            for (const ticker of tickers) {
-                try {
-                    let url = DATA_SOURCES.stock + ticker;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    
-                    if (data.c) {
-                        const price = data.c[0];
-                        updatePriceInTable(ticker, price);
-                    }
-                } catch (error) {
-                    console.error(`Error al actualizar ${ticker}:`, error);
-                }
-            }
-
-            calculateMetrics();
-        }
-
-        // Función para actualizar un precio en la tabla
-        function updatePriceInTable(ticker, price) {
-            const data = hot.getData();
-            for (let i = 1; i < data.length; i++) {
-                if (data[i][5] === ticker) {
-                    data[i][6] = price; // Actualizar precio actual
-                }
-            }
-            hot.loadData(data);
-        }
-
-        // Función para calcular métricas
-        function calculateMetrics() {
-            const data = hot.getData();
-            let totalInvertido = 0;
-            let valorActualTotal = 0;
-
-            for (let i = 1; i < data.length; i++) {
-                const monto = parseFloat(data[i][2]) || 0;
-                const precioCompra = parseFloat(data[i][3]) || 0;
-                const cantidad = parseFloat(data[i][4]) || 0;
-                const precioHoy = parseFloat(data[i][6]) || 0;
-                const precioObjetivo = parseFloat(data[i][7]) || 0;
-
-                // Calcular HOY NETO
-                const hoyNeto = precioHoy * cantidad;
-                data[i][9] = isNaN(hoyNeto) ? "" : hoyNeto;
-
-                // Calcular Diferencia $ y Rendimiento %
-                let difPesos = 0;
-                let rendimiento = 0;
-
-                if (monto > 0 && !isNaN(hoyNeto)) {
-                    difPesos = hoyNeto - monto;
-                    rendimiento = difPesos / monto;
-                }
-
-                data[i][10] = difPesos;
-                data[i][11] = rendimiento;
-
-                // Máximo Histórico y Drawdown
-                let maxHistorico = parseFloat(data[i][12]) || 0;
-                if (hoyNeto > maxHistorico) {
-                    maxHistorico = hoyNeto;
-                    data[i][12] = maxHistorico;
-                }
-
-                let drawdown = 0;
-                if (maxHistorico > 0) {
-                    drawdown = (hoyNeto - maxHistorico) / maxHistorico;
-                }
-                data[i][13] = drawdown;
-
-                // Acumular para resumen
-                if (!isNaN(monto)) totalInvertido += monto;
-                if (!isNaN(hoyNeto)) valorActual
+    <script src="app.js"></script>
+</body>
+</html>
