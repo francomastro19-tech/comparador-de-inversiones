@@ -55,32 +55,6 @@
             <h2 id="result" style="margin-top:20px; color:#28a745; font-size:24px;">—</h2>
         </div>
 
-        <!-- Buscador de Activos -->
-        <div class="section">
-            <h3>🔍 Buscador de Activos Financieros (500+ empresas, índices, bonos)</h3>
-            <input type="text" id="assetSearch" placeholder="Busca por nombre o ticker (ej: YPFD, BRKB, AL35, ^GSPC)" style="width:100%; padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc;">
-            <div id="searchResults" style="margin-top:15px; max-height:200px; overflow-y:auto; background:white; padding:15px; border-radius:8px; border:1px solid #eee;"></div>
-        </div>
-
-        <!-- Resumen de Cartera -->
-        <div class="summary-box">
-            <h3>📈 Resumen de mi Cartera</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
-                <div class="summary-item">
-                    <h4 style="margin: 0; color: #6c757d;">Total Invertido</h4>
-                    <h2 id="totalInvertido" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
-                </div>
-                <div class="summary-item">
-                    <h4 style="margin: 0; color: #6c757d;">Valor Actual</h4>
-                    <h2 id="valorActualTotal" style="margin: 10px 0; font-size: 24px; color: #212529;">$0.00</h2>
-                </div>
-                <div class="summary-item">
-                    <h4 style="margin: 0; color: #6c757d;">Rendimiento Ponderado</h4>
-                    <h2 id="rendimientoPonderado" style="margin: 10px 0; font-size: 24px; color: #212529;">0.00%</h2>
-                </div>
-            </div>
-        </div>
-
         <!-- Tabla de Inversiones -->
         <div class="section">
             <h2>📊 Gestión de Inversiones (Formato Excel Mejorado)</h2>
@@ -109,247 +83,139 @@
     </div>
 
     <script>
-    // Conversor de Monedas
-    async function convertCurrency() {
-        const from = document.getElementById('fromCurrency').value;
-        const to = document.getElementById('toCurrency').value;
-        const amount = parseFloat(document.getElementById('amount').value) || 1;
-
-        if (from === to) {
-            document.getElementById('result').innerText = `${amount} ${from} = ${amount} ${to}`;
-            return;
-        }
-
-        try {
-            const proxyUrl = "https://corsproxy.io/?";
-            const apiUrl = `https://v6.exchangerate-api.com/v6/8d8e9a0a9b1f4a0c9b0e9b0e/latest/${from}`;
-
-            const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
-            const data = await response.json();
-
-            if (data.result === "success") {
-                const rate = data.conversion_rates[to];
-                const converted = (amount * rate).toFixed(4);
-                document.getElementById('result').innerText = `${amount} ${from} = ${converted} ${to}`;
-            } else {
-                document.getElementById('result').innerText = "Error obteniendo tasa";
-            }
-        } catch (e) {
-            document.getElementById('result').innerText = "Error de conexión";
-            console.log(e);
-        }
-    }
-
-    // Buscador de Activos (500+)
-    const assets = [
-        // 🇺🇸 USA - Top Empresas
-        { name: "Apple Inc.", ticker: "AAPL", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "Microsoft Corp.", ticker: "MSFT", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "Amazon.com Inc.", ticker: "AMZN", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "Alphabet Inc. (Google)", ticker: "GOOGL", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "Meta Platforms (Facebook)", ticker: "META", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "NVIDIA Corporation", ticker: "NVDA", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        { name: "Tesla Inc.", ticker: "TSLA", type: "Acción", country: "USA", exchange: "NASDAQ" },
-        // 🇦🇷 CEDEARs
-        { name: "CEDEAR Apple", ticker: "CEDEAR.AAPL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Microsoft", ticker: "CEDEAR.MSFT", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Amazon", ticker: "CEDEAR.AMZN", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Berkshire Hathaway", ticker: "CEDEAR.BRKB", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Citigroup", ticker: "CEDEAR.C", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Google", ticker: "CEDEAR.GOOGL", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR NVIDIA", ticker: "CEDEAR.NVDA", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Occidental Petroleum", ticker: "CEDEAR.OXY", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        { name: "CEDEAR Procter & Gamble", ticker: "CEDEAR.PG", type: "CEDEAR", country: "Argentina", exchange: "BYMA" },
-        // 🇦🇷 Empresas Locales
-        { name: "YPF S.A.", ticker: "YPFD", type: "Acción", country: "Argentina", exchange: "BYMA" },
-        { name: "Grupo Galicia", ticker: "GGAL", type: "Acción", country: "Argentina", exchange: "BYMA" },
-        // 📈 Índices
-        { name: "S&P 500", ticker: "^GSPC", type: "Índice", country: "USA", exchange: "NYSE" },
-        { name: "Dow Jones Industrial", ticker: "^DJI", type: "Índice", country: "USA", exchange: "NYSE" },
-        { name: "Nasdaq Composite", ticker: "^IXIC", type: "Índice", country: "USA", exchange: "NASDAQ" },
-        // 📉 Bonos
-        { name: "Bono Argentina AL35", ticker: "AL35.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-        { name: "Bono Argentina AE38", ticker: "AE38.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-        { name: "Bono Argentina GD30", ticker: "GD30.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-        { name: "Bono Argentina TV25", ticker: "TV25.BA", type: "Bono", country: "Argentina", exchange: "BYMA" },
-        // 🌍 Más activos
-        { name: "Bitcoin USD", ticker: "BTC-USD", type: "Cripto", country: "Global", exchange: "Coinbase" },
-        { name: "Oro (Gold)", ticker: "GC=F", type: "Materia Prima", country: "Global", exchange: "COMEX" }
-    ];
-
-    document.getElementById('assetSearch').addEventListener('input', function() {
-        const term = this.value.toLowerCase();
-        const resultsDiv = document.getElementById('searchResults');
-        resultsDiv.innerHTML = '';
-
-        if (term.length < 2) return;
-
-        const filtered = assets.filter(a => 
-            a.name.toLowerCase().includes(term) || a.ticker.toLowerCase().includes(term)
-        );
-
-        if (filtered.length === 0) {
-            resultsDiv.innerHTML = "<p style='padding:15px; color:#6c757d;'>No se encontraron resultados.</p>";
-            return;
-        }
-
-        filtered.forEach(asset => {
-            const div = document.createElement('div');
-            div.innerHTML = `<strong>${asset.ticker}</strong> - ${asset.name} <small>(${asset.type})</small>`;
-            div.style.cursor = "pointer";
-            div.onclick = function() {
-                alert(`✅ Copiá y pegá este ticker en la columna "Abreviatura" de tu tabla:\n\n${asset.ticker}`);
-                document.getElementById('assetSearch').value = '';
-                resultsDiv.innerHTML = '';
-            };
-            resultsDiv.appendChild(div);
-        });
-    });
-
-    // Gráfico de Torta
-    function updatePortfolioChart() {
-        const data = hot.getData();
-        const labels = [];
-        const values = [];
-        const colors = [];
-
-        for (let i = 1; i < data.length; i++) {
-            const abreviatura = data[i][5] || '';
-            const hoyNeto = parseFloat(data[i][9]) || 0;
-
-            if (abreviatura && hoyNeto > 0) {
-                labels.push(abreviatura);
-                values.push(hoyNeto);
-                const color = '#' + Math.floor(Math.random()*16777215).toString(16);
-                colors.push(color);
-            }
-        }
-
-        const existingChart = Chart.getChart("portfolioChart");
-        if (existingChart) existingChart.destroy();
-
-        const ctx = document.getElementById('portfolioChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-             {
-                labels: labels,
-                datasets: [{
-                     values,
-                    backgroundColor: colors,
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((value / total) * 100).toFixed(2);
-                                return `${label}: $${value.toLocaleString()} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Gráfico por Tipo de Activo
-    function updateTipoActivoChart() {
-        const data = hot.getData();
-        const tipos = {};
-        const colores = {
-            'Acción': '#FF6384',
-            'CEDEAR': '#36A2EB',
-            'Bono': '#FFCE56',
-            'Cripto': '#4BC0C0',
-            'Materia Prima': '#9966FF',
-            'Índice': '#FF9F40',
-            'Otro': '#C9CBCF'
+        // Configuración de fuentes de datos gratuitas
+        const DATA_SOURCES = {
+            stock: 'https://finnhub.io/api/v1/quote?symbol=',
+            currency: 'https://api.exchangerate-api.com/v4/latest/',
+            crypto: 'https://min-api.cryptocompare.com/data/price?fsym=',
+            commodities: 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol='
         };
 
-        for (let i = 1; i < data.length; i++) {
-            const abreviatura = data[i][5] || '';
-            const hoyNeto = parseFloat(data[i][9]) || 0;
-            let tipo = 'Otro';
+        // Inicialización de la tabla
+        const container = document.getElementById('spreadsheet');
+        const hot = new Handsontable(container, {
+            startRows: 15,
+            startCols: 14,
+            colHeaders: [
+                "Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
+                "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
+                "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"
+            ],
+            rowHeaders: true,
+            contextMenu: true,
+            formulas: true,
+            height: 'auto',
+            licenseKey: 'non-commercial-and-evaluation',
+            columns: [
+                {}, // Fecha
+                {}, // Operación
+                { type: 'numeric', format: '0,0.00' }, // Monto Transferido
+                { type: 'numeric', format: '0,0.00' }, // Precio c/u Compra
+                { type: 'numeric' }, // Cantidad
+                {}, // Abreviatura
+                { type: 'numeric', format: '0,0.00' }, // Precio c/u HOY
+                { type: 'numeric', format: '0,0.00' }, // Precio Objetivo
+                {}, // Estado Alerta
+                { type: 'numeric', format: '0,0.00', readOnly: true }, // HOY NETO
+                { type: 'numeric', format: '0,0.00', readOnly: true }, // Diferencia $
+                { type: 'numeric', format: '0.00%', readOnly: true },  // Rendimiento %
+                { type: 'numeric', format: '0,0.00', readOnly: true }, // Máximo Histórico
+                { type: 'numeric', format: '0.00%', readOnly: true }  // Drawdown
+            ]
+        });
 
-            if (abreviatura.includes('YPF') || abreviatura.includes('GGAL') || abreviatura.includes('ALUA') || abreviatura.includes('TXAR')) {
-                tipo = 'Acción';
-            } else if (abreviatura.includes('CEDEAR')) {
-                tipo = 'CEDEAR';
-            } else if (abreviatura.includes('AL35') || abreviatura.includes('AE38') || abreviatura.includes('GD30') || abreviatura.includes('TV25')) {
-                tipo = 'Bono';
-            } else if (abreviatura.includes('BTC') || abreviatura.includes('ETH')) {
-                tipo = 'Cripto';
-            } else if (abreviatura.includes('^')) {
-                tipo = 'Índice';
-            } else if (abreviatura.includes('GC=F') || abreviatura.includes('CL=F')) {
-                tipo = 'Materia Prima';
+        // Datos iniciales
+        const initialData = [
+            ["Fecha", "Operación", "Monto Transferido ($)", "Precio c/u Compra", "Cantidad", "Abreviatura", 
+             "Precio c/u HOY", "Precio Objetivo", "Estado Alerta", "HOY NETO ($)", 
+             "Diferencia ($)", "Rendimiento (%)", "Máximo Histórico ($)", "Drawdown (%)"]
+        ];
+
+        // Cargar datos iniciales
+        hot.loadData(initialData);
+
+        // Función para actualizar precios en tiempo real
+        async function fetchPrices() {
+            const data = hot.getData();
+            const tickers = new Set();
+            
+            // Recopilar todos los tickers únicos
+            for (let i = 1; i < data.length; i++) {
+                if (data[i][5]) tickers.add(data[i][5]);
             }
 
-            if (!tipos[tipo]) {
-                tipos[tipo] = 0;
-            }
-            tipos[tipo] += hoyNeto;
-        }
-
-        const labels = Object.keys(tipos);
-        const values = Object.values(tipos);
-        const backgroundColors = labels.map(label => colores[label] || colores['Otro']);
-
-        const existingChart = Chart.getChart("tipoActivoChart");
-        if (existingChart) existingChart.destroy();
-
-        const ctx = document.getElementById('tipoActivoChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-             {
-                labels: labels,
-                datasets: [{
-                     values,
-                    backgroundColor: backgroundColors,
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const value = context.raw || 0;
-                                return `$${value.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-                            }
-                        }
+            // Actualizar precios para cada ticker
+            for (const ticker of tickers) {
+                try {
+                    let url = DATA_SOURCES.stock + ticker;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.c) {
+                        const price = data.c[0];
+                        updatePriceInTable(ticker, price);
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value.toLocaleString('es-AR');
-                            }
-                        }
-                    }
+                } catch (error) {
+                    console.error(`Error al actualizar ${ticker}:`, error);
                 }
             }
-        });
-    }
 
-    // Convertir al cargar
-    setTimeout(convertCurrency, 1000);
-    </script>
+            calculateMetrics();
+        }
 
-    <script src="app.js"></script>
-</body>
-</html>
+        // Función para actualizar un precio en la tabla
+        function updatePriceInTable(ticker, price) {
+            const data = hot.getData();
+            for (let i = 1; i < data.length; i++) {
+                if (data[i][5] === ticker) {
+                    data[i][6] = price; // Actualizar precio actual
+                }
+            }
+            hot.loadData(data);
+        }
 
+        // Función para calcular métricas
+        function calculateMetrics() {
+            const data = hot.getData();
+            let totalInvertido = 0;
+            let valorActualTotal = 0;
+
+            for (let i = 1; i < data.length; i++) {
+                const monto = parseFloat(data[i][2]) || 0;
+                const precioCompra = parseFloat(data[i][3]) || 0;
+                const cantidad = parseFloat(data[i][4]) || 0;
+                const precioHoy = parseFloat(data[i][6]) || 0;
+                const precioObjetivo = parseFloat(data[i][7]) || 0;
+
+                // Calcular HOY NETO
+                const hoyNeto = precioHoy * cantidad;
+                data[i][9] = isNaN(hoyNeto) ? "" : hoyNeto;
+
+                // Calcular Diferencia $ y Rendimiento %
+                let difPesos = 0;
+                let rendimiento = 0;
+
+                if (monto > 0 && !isNaN(hoyNeto)) {
+                    difPesos = hoyNeto - monto;
+                    rendimiento = difPesos / monto;
+                }
+
+                data[i][10] = difPesos;
+                data[i][11] = rendimiento;
+
+                // Máximo Histórico y Drawdown
+                let maxHistorico = parseFloat(data[i][12]) || 0;
+                if (hoyNeto > maxHistorico) {
+                    maxHistorico = hoyNeto;
+                    data[i][12] = maxHistorico;
+                }
+
+                let drawdown = 0;
+                if (maxHistorico > 0) {
+                    drawdown = (hoyNeto - maxHistorico) / maxHistorico;
+                }
+                data[i][13] = drawdown;
+
+                // Acumular para resumen
+                if (!isNaN(monto)) totalInvertido += monto;
+                if (!isNaN(hoyNeto)) valorActual
